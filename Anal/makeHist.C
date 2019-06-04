@@ -5,10 +5,12 @@ using namespace std;
 
 void makeHist(){
 
-	TFile *f1 = new TFile("DYjet.root","recreate");
+	TFile *f1 = new TFile("test_hist_Data.root","recreate");
+	//TFile *f1 = new TFile("test_hist_DYjet.root","recreate");
 	
 	TChain *inChain = new TChain("MiniAnalyzer/outTree");
-	inChain->Add("/hcp/data/data02/jwkim2/WORK/ZAJJ/CMSSW_8_1_0/src/MiniAnalyzer/MiniAnalyzer/Ntuple/test_DYNt.root");
+	inChain->Add("/hcp/data/data02/jwkim2/WORK/ZAJJ/CMSSW_8_1_0/src/MiniAnalyzer/MiniAnalyzer/Ntuple/test_DoubleEG_GT_Run2016B.root");
+	//inChain->Add("/hcp/data/data02/jwkim2/WORK/ZAJJ/CMSSW_8_1_0/src/MiniAnalyzer/MiniAnalyzer/Ntuple/test_GT_DYNt.root");
 	
 
 	   int ele_size;	   inChain->SetBranchAddress("ele_size",&ele_size);
