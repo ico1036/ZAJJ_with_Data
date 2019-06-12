@@ -1,4 +1,4 @@
-### Patial luminosity can be calculated using brilcalc  
+### Partial luminosity can be calculated using brilcalc  
 
 #### 0. Installation must be done in lxplus  
 
