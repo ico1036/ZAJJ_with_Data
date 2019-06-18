@@ -11,7 +11,7 @@ pip install --install-option="--prefix=$HOME/.local" brilws
 #### 2. Run example  
 
 ```bash
-brilcalc lumi -b "STABLE BEAMS" -i filename --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/normtag_DATACERT.json  
+brilcalc lumi -b "STABLE BEAMS" -i test_DoubleEG_GT_Run2016BJSON.txt --normtag /afs/cern.ch/user/l/lumipro/public/Normtags/normtag_DATACERT.json -u /fb 
 ```  
 
  - Info of norm tag: https://twiki.cern.ch/twiki/bin/view/CMS/PdmV
