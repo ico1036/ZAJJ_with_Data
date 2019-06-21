@@ -4,22 +4,34 @@ void draw(){
 	double XMAX = -1;
 	long YMAX   = 100;
 	
-	const double Lumi = 39500      ;
+	const double Lumi = 0.062138580*1000     ;
+	const double xsec_DYjet = 22880			 ;
+		 
+
+
+
 	int rebin=1; 
 	TFile *fData  = TFile::Open("hist/25000_evets_Z_peak/test_hist_Data.root") ;
 	TFile *fDYjet = TFile::Open("hist/25000_evets_Z_peak/test_hist_DYjet.root") ;
 
 	
-	TString histname = "h1_Mee"; XMAX=200; XMIN=0; rebin=50; YMAX=10000; TString title_name = "Mass_{ee}";
+	TString histname = "h1_Mee"; XMAX=400; XMIN=0; rebin=50; YMAX=100000; TString title_name = "Mass_{ee}";
 
 
 	TH1F *hData		= (TH1F*)fData	  ->Get(histname); 
 	TH1F *hDYjet	= (TH1F*)fDYjet	  ->Get(histname); 
 	
-	hDYjet->SetLineWidth(3); hDYjet->SetLineColor(46); 
+	cout << hData->Integral() << endl;
+	cout << hDYjet->Integral() << endl;
+
+
+	hDYjet->SetLineWidth(3); hDYjet->SetLineColor(46);  hDYjet->Scale(Lumi * xsec_DYjet / 25000);
 	hDYjet->Rebin(rebin);
 	
 	hData->Rebin(rebin);
+	
+	cout << hData->Integral() << endl;
+	cout << hDYjet->Integral() << endl;
 
 	double binwidth = hDYjet->GetBinWidth(1);
 
@@ -63,10 +75,10 @@ void draw(){
 		latex.SetNDC();
 		latex.SetTextSize(0.04);
 		latex.SetTextAlign(11);
-		//latex.DrawLatex(0.6,0.91,Form("%.1f fb^{-1} (13 TeV)", Lumi/1000.0));
+		latex.DrawLatex(0.6,0.91,Form("%.3f fb^{-1} (13 TeV)", Lumi/1000.0));
 		
 		TString pngname=histname + ".png";
-		c1->Print("MCvsDAta2_"+pngname);
+		c1->Print("MCvsDAta4_"+pngname);
 
 }
 
