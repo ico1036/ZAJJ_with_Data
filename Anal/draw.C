@@ -4,32 +4,46 @@ void draw(){
 	double XMAX = -1;
 	long YMAX   = 100;
 	
-	const double Lumi = 0.062138580*1000     ;
-	const double xsec_DYjet = 22880			 ;
+	//const double Lumi = 0.062138580*1000     ;
+	//const double xsec_DYjet = 22880			 ;
 		 
 
 
 
 	int rebin=1; 
-	TFile *fData  = TFile::Open("hist/25000_evets_Z_peak/test_hist_Data.root") ;
-	TFile *fDYjet = TFile::Open("hist/25000_evets_Z_peak/test_hist_DYjet.root") ;
+	TFile *fData  = TFile::Open("hist/DoubleEG_GT_Run2016B/hist_Data_Z60_120.root") ;
+	TFile *fDYjet = TFile::Open("hist/MC/hist_DYjet_Z60_120.root") ;
 
 	
-	TString histname = "h1_Mee"; XMAX=400; XMIN=0; rebin=50; YMAX=100000; TString title_name = "Mass_{ee}";
+	TString histname = "h1_Mee"; XMAX=120; XMIN=60; rebin=10; YMAX=10000; TString title_name = "Mass_{ee}";
 
 
 	TH1F *hData		= (TH1F*)fData	  ->Get(histname); 
 	TH1F *hDYjet	= (TH1F*)fDYjet	  ->Get(histname); 
 	
+	cout << "### Before Normalize ###" << endl;
 	cout << hData->Integral() << endl;
 	cout << hDYjet->Integral() << endl;
 
 
-	hDYjet->SetLineWidth(3); hDYjet->SetLineColor(46);  hDYjet->Scale(Lumi * xsec_DYjet / 25000);
+	//hDYjet->SetLineWidth(3); hDYjet->SetLineColor(46);  hDYjet->Scale(Lumi * xsec_DYjet / 25000);
+	hDYjet->SetLineWidth(3); hDYjet->SetLineColor(46);  
+	
+	//Find bin range
+	double x_start_bin = hDYjet->GetXaxis()->FindBin(60);
+	double x_end_bin = hDYjet->GetXaxis()->FindBin(120);
+	
+	cout << "start bin: " <<x_start_bin << endl;
+	cout << "end bin: "   <<x_end_bin << endl;
+
+	//Normalize
+	hDYjet->Scale(hData->Integral(x_start_bin,x_end_bin) / hDYjet->Integral(x_start_bin,x_end_bin));
+	//hDYjet->Scale(hData->Integral() / hDYjet->Integral());
 	hDYjet->Rebin(rebin);
 	
 	hData->Rebin(rebin);
 	
+	cout << "### After Normalize ###" << endl;
 	cout << hData->Integral() << endl;
 	cout << hDYjet->Integral() << endl;
 
@@ -75,10 +89,10 @@ void draw(){
 		latex.SetNDC();
 		latex.SetTextSize(0.04);
 		latex.SetTextAlign(11);
-		latex.DrawLatex(0.6,0.91,Form("%.3f fb^{-1} (13 TeV)", Lumi/1000.0));
+		//latex.DrawLatex(0.6,0.91,Form("%.3f fb^{-1} (13 TeV)", Lumi/1000.0));
 		
 		TString pngname=histname + ".png";
-		c1->Print("MCvsDAta4_"+pngname);
+		c1->Print("MCvsDAta6_"+pngname);
 
 }
 
