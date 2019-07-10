@@ -1,0 +1,54 @@
+<lcgdict>
+   <class name="std::vector<npknu::Evt>"/>
+   <class name="edm::Wrapper<std::vector<npknu::Evt> >"/>
+   <class name="edm::Wrapper<npknu::Evt>"/>
+
+   <class name="std::vector<npknu::P4>"/>
+   <class name="edm::Wrapper<std::vector<npknu::P4> >"/>
+   <class name="edm::Wrapper<npknu::P4>"/>
+
+   <class name="std::vector<npknu::GenInfo>"/>
+   <class name="edm::Wrapper<std::vector<npknu::GenInfo> >"/>
+   <class name="edm::Wrapper<npknu::GenInfo>"/>
+
+   <class name="std::vector<npknu::GenParticle>"/>
+   <class name="edm::Wrapper<std::vector<npknu::GenParticle> >"/>
+   <class name="edm::Wrapper<npknu::GenParticle>"/>
+
+   <class name="std::vector<npknu::Vertex>"/>
+   <class name="edm::Wrapper<std::vector<npknu::Vertex> >"/>
+   <class name="edm::Wrapper<npknu::Vertex>"/>
+
+   <class name="std::vector<npknu::Pileup>"/>
+   <class name="edm::Wrapper<std::vector<npknu::Pileup> >"/>
+   <class name="edm::Wrapper<npknu::Pileup>"/>
+
+   <class name="std::vector<npknu::Electron>"/>
+   <class name="edm::Wrapper<std::vector<npknu::Electron> >"/>
+   <class name="edm::Wrapper<npknu::Electron>"/>
+
+   <class name="std::vector<npknu::Photon>"/>
+   <class name="edm::Wrapper<std::vector<npknu::Photon> >"/>
+   <class name="edm::Wrapper<npknu::Photon>"/>
+
+   <class name="std::vector<npknu::MET>"/>
+   <class name="edm::Wrapper<std::vector<npknu::MET> >"/>
+   <class name="edm::Wrapper<npknu::MET>"/>
+
+   <class name="std::vector<npknu::Jet>"/>
+   <class name="edm::Wrapper<std::vector<npknu::Jet> >"/>
+   <class name="edm::Wrapper<npknu::Jet>"/>
+
+   <class name="std::vector<npknu::Trigger>"/>
+   <class name="edm::Wrapper<std::vector<npknu::Trigger> >"/>
+   <class name="edm::Wrapper<npknu::Trigger>"/>
+
+   <class name="std::vector<npknu::TriggerObject>"/>
+   <class name="edm::Wrapper<std::vector<npknu::TriggerObject> >"/>
+   <class name="edm::Wrapper<npknu::TriggerObject>"/>
+
+   <class name="std::vector<npknu::Muon>"/>
+   <class name="edm::Wrapper<std::vector<npknu::Muon> >"/>
+   <class name="edm::Wrapper<npknu::Muon>"/>
+
+</lcgdict>
