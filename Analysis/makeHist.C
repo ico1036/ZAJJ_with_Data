@@ -11,7 +11,7 @@ void makeHist(){
 	gSystem->Load("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_6_patch1/src/MiniAnalyzer/MiniAnalyzer/src/libNpKNU.so");	
 	TChain *inChain = new TChain("MiniAnalyzer/NpKNU");
 	
-	bool isMC = true;
+	bool isMC = false;
 	//TFile *f1 = new TFile("hist_DYjet.root","recreate"); // for mc
 	TFile *f1 = new TFile("hist_Data.root","recreate"); //for data
 	
