@@ -71,7 +71,7 @@ void draw(){
 		null1->GetYaxis()->SetTitleSize(0.03);
 		null1->GetYaxis()->SetLabelSize(0.03);
 		null1->Draw();
-		 hDYjet->Draw("same");
+		 hDYjet->Draw("same hist");
 		 hData ->Draw("E1 same");
 
 // --Legend and Latex	
@@ -92,7 +92,7 @@ void draw(){
 		//latex.DrawLatex(0.6,0.91,Form("%.3f fb^{-1} (13 TeV)", Lumi/1000.0));
 		
 		TString pngname=histname + ".png";
-		c1->Print("MCvsDAta6_"+pngname);
+		c1->Print("MCvsData_Zmass_trigger"+pngname);
 
 }
 
