@@ -18,12 +18,6 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
-#@#@ --Added------------------------------------------------
-process.load("Configuration.StandardSequences.Services_cff")
-process.load("Configuration.StandardSequences.MagneticField_cff")
-process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
-#-------------------------------------------------------------------
-
 
 # Input, GT, Output
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -46,30 +40,54 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(25000))
 process.MessageLogger.cerr.FwkReport.reportEvery = 100  ## --How often you're updated on the progress
 process.TFileService = cms.Service("TFileService",fileName = cms.string(outFileName))  
 
+
 print "### isMC ", varOptions.isMC
 print "### GlobalTag ", process.GlobalTag.globaltag
 print "### InFileName ", process.source.fileNames
 print "### OutFileName ", process.TFileService.fileName
 
 
-#@#@ Added --------------------------------------------------------------------------
-## Electron ID 
-from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
-setupEgammaPostRecoSeq(process,
-                       runVID=True,
-                       runEnergyCorrections=False, #no point in re-running them, they are already fine
-                       era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
- 
-# ----------------------------------------------------------------------------------------------------------------
 
 
 ## Input tag============================================
+
+
+#$#$ ---------------------Added
+## --For Electron ID
+
+from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
+process.load("RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi")
+process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('slimmedElectrons')
+
+from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
+process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDs)
+
+process.load('RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff')
+setupVIDSelection(process.egmGsfElectronIDs,process.heepElectronID_HEEPV51)
+#$#$ ---------------------------------------------------------------------------
+
+
+
 
 process.MiniAnalyzer = cms.EDAnalyzer("MiniAnalyzer",
 #    vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
 #    muons = cms.InputTag("slimmedMuons"),
     electrons = cms.InputTag("slimmedElectrons"),
-
+	electronsEC      = cms.InputTag("calibratedPatElectrons"),
+	eleCutTight      = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight"),
+    eleCutMedium     = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-medium"),
+    eleCutLoose      = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-loose"),
+    eleCutVeto       = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto"),
+	eleCutHLTSafe    = cms.InputTag("egmGsfElectronIDs:cutBasedElectronHLTPreselection-Summer16-V1"),
+	eleCutHEEP       = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV70"),
+	eleMVA90         = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring16-GeneralPurpose-V1-wp90"),
+    eleMVA80         = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring16-GeneralPurpose-V1-wp80"),
+	eleMVAValues     = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values"),
+    eleMVACategories = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Categories"),
+	vertex          = cms.InputTag("offlineSlimmedPrimaryVertices"),
+	rho             = cms.InputTag("fixedGridRhoFastjetAll"),
+	genParticles = cms.InputTag('prunedGenParticles'),
+	packedPFCandidates = cms.InputTag("packedPFCandidates"),
 
 	triggerResults = cms.InputTag("TriggerResults","","HLT"),
     #triggerObjects = cms.InputTag("slimmedPatTrigger"),# Low version
@@ -91,7 +109,13 @@ process.MiniAnalyzer.triggerLabelsName = HLTLabelNameFile.read().splitlines()
 HLTLabelNameFile.close()
 
 ## Run ===================================
-process.p = cms.Path(process.MiniAnalyzer)
+
+#$#$ Added-----------------------
+process.p = cms.Path(process.egmGsfElectronIDSequence * process.MiniAnalyzer)
+#_-----------------
+
+
+#process.p = cms.Path(process.MiniAnalyzer)
 
 ### Import Golden JSON file ===========================
 #from CondCore.CondDB.CondDB_cfi import *

@@ -12,5 +12,16 @@
 <use name="RecoParticleFlow/PFProducer"/>
 <use name="DataFormats/ParticleFlowReco"/>
 <use name="MiniAnalyzer/MiniAnalyzer"/>
+
+<use   name="CondFormats/DataRecord"/>
+<use   name="CondFormats/EgammaObjects"/>
+<use   name="DataFormats/EgammaCandidates"/>
+<use   name="DataFormats/EcalRecHit"/>
+<use   name="CommonTools/UtilAlgos"/>
+<use   name="root"/>
+<use name="rootcore"/>
+<use name="RecoEgamma/EgammaTools"/>
+<use name="RecoEgamma/ElectronIdentification"/>
+
 <flags EDM_PLUGIN="1"/>
 

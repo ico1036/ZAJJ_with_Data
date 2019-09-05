@@ -31,18 +31,20 @@ class MakeHLTIndex : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 };
 
 
+// --- 1. Constructer: Scan and index my own HLTnames.txt
+//		If the HLTnames.txt is null, output is not created 
 MakeHLTIndex::MakeHLTIndex(const edm::ParameterSet& iConfig) {
 
     oldRun = 0;
-   triggerResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
-    triggerLabelsName = iConfig.getParameter<std::vector<std::string> >("triggerLabelsName");
-    int ThisGlobalTriggerIndex = 0;
-   for(std::vector<std::string>::iterator it = triggerLabelsName.begin(); it!= triggerLabelsName.end(); it++) {
-        if((it->compare(0,1,"#")) == 0) continue;
-      ThisGlobalTriggerIndex++;
-      size_t lastSize = it->find("_v");
-      if(lastSize != std::string::npos) it->resize(lastSize+2);
-      std::cout << "### IndexTriggerLabelName " << ThisGlobalTriggerIndex << " " << *it << std::endl;
+   triggerResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults")); //Get Trigger Result
+    triggerLabelsName = iConfig.getParameter<std::vector<std::string> >("triggerLabelsName"); // Get offline TriggerLabelsName( data/HLTnames.txt )
+    int ThisGlobalTriggerIndex = 0; // index number 
+   for(std::vector<std::string>::iterator it = triggerLabelsName.begin(); it!= triggerLabelsName.end(); it++) { //HLTnames.txt loop start
+        if((it->compare(0,1,"#")) == 0) continue;  // If the # is in the first space, continue
+      ThisGlobalTriggerIndex++; 
+      size_t lastSize = it->find("_v"); // fine the location of "_v"
+      if(lastSize != std::string::npos) it->resize(lastSize+2);  // resize the string:  the words after "_v" are deleted
+      std::cout << "### IndexTriggerLabelName " << ThisGlobalTriggerIndex << " " << *it << std::endl; 
    }
 }
 
@@ -61,7 +63,10 @@ void MakeHLTIndex::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     oldRun = runNum;
 
 
-// START Trigger
+// ---2. START Trigger
+//		 triggerResults are converted TriggerNames(online) 
+//		 output the online TriggerNames
+//		 2_1 comparing my HLTnames.txt(offline) and output missing trigger names
    edm::Handle<edm::TriggerResults> triggerResults ; iEvent.getByToken(triggerResultsToken, triggerResults);
    const edm::TriggerNames &names = iEvent.triggerNames(*triggerResults);
     std::cout << "\n === TRIGGER PATHS === " << " " << (unsigned int) iEvent.id().run() << std::endl;
@@ -73,6 +78,7 @@ void MakeHLTIndex::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 }
 
 
+// ---2_1 comparing my HLTnames.txt(offline) and output missing trigger names
 int MakeHLTIndex::TriggerNameToInt(std::string name, unsigned int runNumber) {
    unsigned int index=0;
    TString nameStr(name);
