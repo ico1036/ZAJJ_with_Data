@@ -42,11 +42,13 @@ class MiniAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
+// ---------1. EDGet Token 
+
 	edm::EDGetTokenT<edm::View<pat::Electron> > electronToken_;
     edm::EDGetTokenT<edm::ValueMap<bool> > eleCutTightToken  ;
-    edm::EDGetTokenT<edm::ValueMap<bool> > eleCutMediumToken ;
-    edm::EDGetTokenT<edm::ValueMap<bool> > eleCutLooseToken  ;
-    edm::EDGetTokenT<edm::ValueMap<bool> > eleCutVetoToken   ;
+   // edm::EDGetTokenT<edm::ValueMap<bool> > eleCutMediumToken ;
+   // edm::EDGetTokenT<edm::ValueMap<bool> > eleCutLooseToken  ;
+   // edm::EDGetTokenT<edm::ValueMap<bool> > eleCutVetoToken   ;
 
 	edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken;
@@ -75,7 +77,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig){
 	electronTCA = new TClonesArray("npknu::Electron"); outTree->Branch("electron"      , &electronTCA );
 	
 
-
+// ---------2. Linking Input tag 
 	electronToken_		 = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons"));
    	eleCutTightToken     = consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleCutTight" )) ;
 
