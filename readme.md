@@ -4,6 +4,13 @@ Current cmssw version: CMSSW_9_4_6_patch1
 We need to move **CMSSW_9_4_9_cand2** or higher version for analysis 2016+2017 data  
 *This info based on following twiki, 2016/2017 Data/MC*  
 https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaPostRecoRecipes  
+  
+Now Im trying this step:  
+1. Use *EgammaTools/test/runEgammaPostRecoTools.py * and make new MiniAOD whose ElectronIDs are embedded  
+2. Read the new MiniAOD files and find out how to access ElectronIDS  
+
+
+
 
 ---
 
