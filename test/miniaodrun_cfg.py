@@ -2,6 +2,8 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 import sys
 
+process = cms.Process("MiniAnalyzer")
+
 ### VarParcing
 options = dict()
 varOptions = VarParsing('analysis')
@@ -9,19 +11,19 @@ varOptions.register("isMC", True, VarParsing.multiplicity.singleton, VarParsing.
 varOptions.parseArguments()
 
 
-
-process = cms.Process("MiniAnalyzer")
-
 ### Standard modules Loading
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+#process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+
 
 #@#@ --Added------------------------------------------------
-process.load("Configuration.StandardSequences.Services_cff")
+process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
+process.load("Configuration.StandardSequences.Services_cff")
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 #-------------------------------------------------------------------
 
 
@@ -30,11 +32,13 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 from Configuration.AlCa.autoCond import autoCond
 
 if (varOptions.isMC):
-	process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'
+	#process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'
+	process.GlobalTag.globaltag = '94X_mcRun2_asymptotic_v3'
 	inputFileName = 'file:/hcp/data/data02/jwkim2/store/mc/RunIISummer16MiniAODv2/701979BD-51C4-E611-9FC9-C4346BC84780.root'
 	outFileName = "DYjet.root"
 else:
-	process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'  
+	#process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'  
+	process.GlobalTag.globaltag = '94X_dataRun2_v10'  
 	inputFileName = 'file:/hcp/data/data02/jwkim2/store/data/Run2016H/DoubleEG/MINIAOD/03Feb2017_ver3-v1/50000/B064E00E-AAEB-E611-9D8E-0CC47A7E018E.root' 
 	outFileName = 'Data.root' 
 
@@ -53,13 +57,18 @@ print "### OutFileName ", process.TFileService.fileName
 
 
 #@#@ Added --------------------------------------------------------------------------
-## Electron ID 
+
+## --EGamma ID Sequence
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
-                       runVID=True,
-                       runEnergyCorrections=False, #no point in re-running them, they are already fine
-                       era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
- 
+						applyEnergyCorrections=False,
+						applyVIDOnCorrectedEgamma=False,
+						isMiniAOD=True,
+						era='2016-Legacy',
+						runVID=True,
+						runEnergyCorrections=False,
+						applyEPCombBug=False)
+process.p = cms.Path( process.egammaPostRecoSeq )
 # ----------------------------------------------------------------------------------------------------------------
 
 
@@ -69,8 +78,7 @@ process.MiniAnalyzer = cms.EDAnalyzer("MiniAnalyzer",
 #    vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
 #    muons = cms.InputTag("slimmedMuons"),
     electrons = cms.InputTag("slimmedElectrons"),
-
-
+	eleCutTight      = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight"),
 	triggerResults = cms.InputTag("TriggerResults","","HLT"),
     #triggerObjects = cms.InputTag("slimmedPatTrigger"),# Low version
     triggerObjects = cms.InputTag("selectedPatTrigger"), # High version
