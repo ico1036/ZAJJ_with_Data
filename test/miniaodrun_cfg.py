@@ -14,17 +14,11 @@ varOptions.parseArguments()
 ### Standard modules Loading
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-#process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-
-
-#@#@ --Added------------------------------------------------
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
 process.load("Configuration.StandardSequences.Services_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-#-------------------------------------------------------------------
 
 
 # Input, GT, Output
@@ -34,11 +28,18 @@ from Configuration.AlCa.autoCond import autoCond
 if (varOptions.isMC):
 	#process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'
 	process.GlobalTag.globaltag = '94X_mcRun2_asymptotic_v3'
-	inputFileName = 'file:/hcp/data/data02/jwkim2/store/mc/RunIISummer16MiniAODv2/701979BD-51C4-E611-9FC9-C4346BC84780.root'
+
+##	-- origin(Electron ID is not embeded)
+	#inputFileName = 'file:/hcp/data/data02/jwkim2/store/mc/RunIISummer16MiniAODv2/701979BD-51C4-E611-9FC9-C4346BC84780.root'
+
+##  -- new miniAOD(Electron ID is embeded)	
+	inputFileName = 'file:/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/RecoEgamma/EgammaTools/test/out_EDM.root'
 	outFileName = "DYjet.root"
 else:
 	#process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'  
 	process.GlobalTag.globaltag = '94X_dataRun2_v10'  
+
+##	-- origin(Electron ID is not embeded)
 	inputFileName = 'file:/hcp/data/data02/jwkim2/store/data/Run2016H/DoubleEG/MINIAOD/03Feb2017_ver3-v1/50000/B064E00E-AAEB-E611-9D8E-0CC47A7E018E.root' 
 	outFileName = 'Data.root' 
 
@@ -56,9 +57,8 @@ print "### InFileName ", process.source.fileNames
 print "### OutFileName ", process.TFileService.fileName
 
 
-#@#@ Added --------------------------------------------------------------------------
 
-## --EGamma ID Sequence
+## --Electron ID Sequence
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
 						applyEnergyCorrections=False,
@@ -69,7 +69,6 @@ setupEgammaPostRecoSeq(process,
 						runEnergyCorrections=False,
 						applyEPCombBug=False)
 process.p = cms.Path( process.egammaPostRecoSeq )
-# ----------------------------------------------------------------------------------------------------------------
 
 
 ## Input tag============================================
@@ -78,9 +77,9 @@ process.MiniAnalyzer = cms.EDAnalyzer("MiniAnalyzer",
 #    vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
 #    muons = cms.InputTag("slimmedMuons"),
     electrons = cms.InputTag("slimmedElectrons"),
-	eleCutTight      = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight"),
 	triggerResults = cms.InputTag("TriggerResults","","HLT"),
-    #triggerObjects = cms.InputTag("slimmedPatTrigger"),# Low version
+    
+	#triggerObjects = cms.InputTag("slimmedPatTrigger"),# Old version
     triggerObjects = cms.InputTag("selectedPatTrigger"), # High version
     triggerPrescales = cms.InputTag("patTrigger"),
     triggerIdentifiers = cms.vstring(['HLT_Ele*','HLT_Mu*','HLT_TkMu*']),
@@ -99,8 +98,10 @@ process.MiniAnalyzer.triggerLabelsName = HLTLabelNameFile.read().splitlines()
 HLTLabelNameFile.close()
 
 ## Run ===================================
-process.p = cms.Path(process.MiniAnalyzer)
+process.p = cms.Path(process.egammaPostRecoSeq*
+					process.MiniAnalyzer)
 
+## Do it after crab
 ### Import Golden JSON file ===========================
 #from CondCore.CondDB.CondDB_cfi import *
 #import FWCore.PythonUtilities.LumiList as LumiList

@@ -42,14 +42,9 @@ class MiniAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
-// ---------1. EDGet Token 
+// ---------Electron: 1. EDGet Token 
 
 	edm::EDGetTokenT<edm::View<pat::Electron> > electronToken_;
-    edm::EDGetTokenT<edm::ValueMap<bool> > eleCutTightToken  ;
-   // edm::EDGetTokenT<edm::ValueMap<bool> > eleCutMediumToken ;
-   // edm::EDGetTokenT<edm::ValueMap<bool> > eleCutLooseToken  ;
-   // edm::EDGetTokenT<edm::ValueMap<bool> > eleCutVetoToken   ;
-
 	edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken;
 	edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken;
@@ -57,15 +52,12 @@ class MiniAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 	std::vector<std::string> triggerLabelsName ;
 	int TriggerNameToInt(std::string name);
 	bool DoPrintTrigger;
-	  
-
-
      
-		TTree* outTree				;
-		TClonesArray* evtTCA		;
-		TClonesArray* electronTCA	;	  
-		TClonesArray* triggerTCA            ;
-		TClonesArray* triggerObjectTCA      ;
+	TTree* outTree				;
+	TClonesArray* evtTCA		;
+	TClonesArray* electronTCA	;	  
+	TClonesArray* triggerTCA            ;
+	TClonesArray* triggerObjectTCA      ;
 };
 
 
@@ -77,9 +69,8 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig){
 	electronTCA = new TClonesArray("npknu::Electron"); outTree->Branch("electron"      , &electronTCA );
 	
 
-// ---------2. Linking Input tag 
+// ---------Elecgron: 2. Linking Input tag 
 	electronToken_		 = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons"));
-   	eleCutTightToken     = consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleCutTight" )) ;
 
 
 	triggerTCA = new TClonesArray("npknu::Trigger"); outTree->Branch("trigger"      , &triggerTCA );
@@ -194,8 +185,12 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
 
 // START Electron
 	electronTCA->Clear("C");
-    edm::Handle<edm::View<pat::Electron> > electrons; iEvent.getByToken(electronToken_, electrons);
-	edm::Handle<edm::ValueMap<bool> >  cutIdDecisionsTight ; iEvent.getByToken(eleCutTightToken  ,cutIdDecisionsTight );
+    
+
+
+
+// ---------Elecgron: 3. Handle 
+	edm::Handle<edm::View<pat::Electron> > electrons; iEvent.getByToken(electronToken_, electrons);
 
 
 	// --Electron Loop
@@ -209,11 +204,9 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
 
 
 
-		// Electron ID
-		
-		cout << "###################" << endl;
-		cout << (*cutIdDecisionsTight )[elePtr] << endl;
-
+		// ---Electron ID
+		cout << "Ele ID CUT ####################" << endl;
+		cout << ele->electronID("cutBasedElectronID-Summer16-80X-V1-loose") << endl;
 
 		electronPtr->gsfTrack_Px      = ele->gsfTrack()->px()  ;
 		electronPtr->gsfTrack_Py      = ele->gsfTrack()->py()  ;
