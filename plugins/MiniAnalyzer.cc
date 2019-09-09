@@ -205,12 +205,12 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
 
 
 		// ---Electron ID
-		cout << "Ele ID CUT ####################" << endl;
-		cout << ele->electronID("cutBasedElectronID-Summer16-80X-V1-loose") << endl;
-		cout << ele->electronID("cutBasedElectronID-Summer16-80X-V1-medium") << endl;
-		cout << ele->electronID("cutBasedElectronID-Summer16-80X-V1-tight") << endl;
-		cout << "####################" << endl;
-
+		electronPtr->vidIsPassVeto	 = ele->electronID("cutBasedElectronID-Summer16-80X-V1-veto")  ;
+		electronPtr->vidIsPassLoose  = ele->electronID("cutBasedElectronID-Summer16-80X-V1-loose") ;
+		electronPtr->vidIsPassMedium = ele->electronID("cutBasedElectronID-Summer16-80X-V1-medium");
+		electronPtr->vidIsPassTight	 = ele->electronID("cutBasedElectronID-Summer16-80X-V1-tight") ;
+		
+		// ---Other variables
 		electronPtr->gsfTrack_Px      = ele->gsfTrack()->px()  ;
 		electronPtr->gsfTrack_Py      = ele->gsfTrack()->py()  ;
 		electronPtr->gsfTrack_Pz      = ele->gsfTrack()->pz()  ;
