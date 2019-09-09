@@ -4,9 +4,12 @@
 https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaPostRecoRecipes  
   
 Now Im trying this step:  
-1. Use *EgammaTools/test/runEgammaPostRecoTools.py* and make new MiniAOD whose ElectronIDs are embedded  
-https://github.com/ico1036/cmssw-1/tree/CMSSW_9_4_X/RecoEgamma/EgammaTools/test  
-2. Read the new MiniAOD files and find out how to access ElectronIDS  
+
+
+0. 2016/2017 Data/MC initial setting(See below) --> "RecoEgamma" directory is created  
+1. Use *RecoEgamma/EgammaTools/test/runEgammaPostRecoTools.py* and make new MiniAOD whose ElectronIDs are embedded  
+* Scripts --> *run.sh*  
+2. Analyze new MiniAOD files with ElectronIDs --> plugin/MiniAnalyzer.cc and test/miniaodrun_cfg.py
 3. Reference code:  
 cmssw(c++): https://github.com/aknayak/JetMetTrigger/blob/master/Analyzer/plugins/HLTJetMETNtupleProducer.cc  
 config(python): https://github.com/aknayak/JetMetTrigger/blob/master/Analyzer/test/hltJetMETNtuple_cfg.py  
