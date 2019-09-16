@@ -1,8 +1,8 @@
 
 ## Summary code
-1. *RecoEgamma/EgammaTools/test/runEgammaPostRecoTools.py*: Embed ID info to miniAOD and output new miniAOD  
-2. *plugins/MiniAnalyzer.cc*: cmssw code  
-3. *test/miniaodrun_cfg.py*: config code  
+1. **RecoEgamma/EgammaTools/test/runEgammaPostRecoTools.py**: Embed ID info to miniAOD and output new miniAOD  
+2. **plugins/MiniAnalyzer.cc**: cmssw code  
+3. **test/miniaodrun_cfg.py**: config code  
 
 ## Status  
 **CMSSW_9_4_9_cand2** or higher version is needed for analysis 2016+2017 data  
