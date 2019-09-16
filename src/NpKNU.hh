@@ -732,7 +732,21 @@ public:
    double rho                                  ;
 
    bool vidIsPassHEEP      ;
-	std::vector<std::pair<int, double> > cutsResultVecHEEP      ;
+   bool vidIsPassTight     ;
+   bool vidIsPassMedium    ;
+   bool vidIsPassLoose     ;
+   bool vidIsPassVeto      ;
+   bool vidIsPassHLTSafe   ;
+    std::vector<std::pair<int, double> > cutsResultVecLoose     ;
+    std::vector<std::pair<int, double> > cutsResultVecHLTSafe   ;
+    std::vector<std::pair<int, double> > cutsResultVecHEEP      ;
+
+    bool  mvaWP90IdMap   ;
+    bool  mvaWP80IdMap   ;
+    float mvaWPValue     ;
+    int   mvaWPCateg     ;
+	
+
 
 
    Electron() {};
