@@ -11,12 +11,11 @@ https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaPostRecoRecipes
   
 Now Im trying this step:  
 
-
-#### 0. 2016/2017 Data/MC initial setting(See below) -> "RecoEgamma" directory is created  
-#### 1. Use **RecoEgamma/EgammaTools/test/runEgammaPostRecoTools.py** and make new MiniAOD whose ElectronIDs are embedded
+#### 1. 2016/2017 Data/MC initial setting(See below) -> "RecoEgamma" directory is created  
+#### 2. Use **RecoEgamma/EgammaTools/test/runEgammaPostRecoTools.py** and make new MiniAOD whose ElectronIDs are embedded
 * Scripts --> *run.sh*  
-#### 2. Analyze new MiniAOD files with ElectronIDs -> plugin/MiniAnalyzer.cc and test/miniaodrun_cfg.py
-#### 3. Reference code:  
+#### 3. Analyze new MiniAOD files with ElectronIDs -> plugin/MiniAnalyzer.cc and test/miniaodrun_cfg.py
+#### 4. Reference code:  
 cmssw(c++): https://github.com/aknayak/JetMetTrigger/blob/master/Analyzer/plugins/HLTJetMETNtupleProducer.cc  
 config(python): https://github.com/aknayak/JetMetTrigger/blob/master/Analyzer/test/hltJetMETNtuple_cfg.py  
 process.egammaPostRecoSeq* must be embedded in process.p = cms.Path(...)
