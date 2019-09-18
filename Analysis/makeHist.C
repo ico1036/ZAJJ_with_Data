@@ -13,7 +13,7 @@ void makeHist(){
 	
 	
 	//bool isMC = true;
-	bool isMC = false;
+	bool isMC = true;
 	//TFile *f1 = new TFile("hist_DYjet.root","recreate"); // for mc
 	TFile *f1 = new TFile("hist_Data.root","recreate"); //for data
 	
@@ -29,11 +29,16 @@ void makeHist(){
 	
 	TClonesArray *triggerTCA = new TClonesArray("npknu::Trigger");	inChain->SetBranchAddress("trigger",&triggerTCA);
 	
+	// Histograms
 	TH1D *h1_Mee = new TH1D("h1_Mee","h1_Mee",10000,0,1000);
 	TH1D *h1_e1PT = new TH1D("h1_e1PT","h1_e1PT",10000,0,1000);
 	TH1D *h1_e2PT = new TH1D("h1_e2PT","h1_e2PT",10000,0,1000);
 	TH1D *h1_ebMinDR = new TH1D("h1_ebMinDR","h1_ebMinDR",10000,0,20);
 	TH2D *eff_ele_ebElePt = new TH2D("eff_ele_ebElePt","eff_ele_ebElePt",10000,0,100,10000,0,100);
+
+	// Electron ID Eff
+	 TEfficiency* pEff = new TEfficiency("eff","ElectronID veto",20,0,10);
+	 pEff->SetTitle("ElectronID veto; p_{T} ; Eff");
 
 	int tot_evt = inChain->GetEntries();
 	int tri_cnt=0;
@@ -84,7 +89,14 @@ void makeHist(){
 			//if(elePtr->vidIsPassVeto == 0) continue;			
 			//if(elePtr->vidIsPassLoose == 0) continue;			
 			//if(elePtr->vidIsPassMedium == 0) continue;			
-			if(elePtr->vidIsPassTight == 0) continue;			
+			//if(elePtr->vidIsPassTight == 0) continue;			
+			
+			pEff->Fill(elePtr->vidIsPassVeto,elePtr->pt);
+			//pEff->Fill(elePtr->vidIsPassLoose,elePtr->pt);
+			//pEff->Fill(elePtr->vidIsPassMedium,elePtr->pt);
+			//pEff->Fill(elePtr->vidIsPassTight,elePtr->pt);
+
+
 			ele_ID_cnt++;
 			new ((*eleSelTCA)[(int)eleSelTCA->GetEntries()]) npknu::Electron(*elePtr);	
 	
@@ -129,6 +141,12 @@ void makeHist(){
 	// --Write file
 	f1->Write();
 
+
+   TCanvas* c1 = new TCanvas("example","",600,400);
+   c1->SetFillStyle(1001);
+   c1->SetFillColor(kWhite);
+	pEff->Draw("AP");
+	c1->Print("Eff.png");
 }
 
 
