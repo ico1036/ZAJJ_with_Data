@@ -11,11 +11,28 @@ void draw(){
 
 
 	int rebin=1; 
-	TFile *fData  = TFile::Open("hist/DoubleEG_GT_Run2016B/hist_Data_Z60_120.root") ;
-	TFile *fDYjet = TFile::Open("hist/MC/hist_DYjet_Z60_120.root") ;
+	//TFile *fData  = TFile::Open("hist/DoubleEG_GT_Run2016B/hist_Data_nontri.root") ;
+	//TFile *fData  = TFile::Open("hist/DoubleEG_GT_Run2016B/hist_Data_Z60_120.root") ;
+	
+	// --EGamma ID applied
+	//TFile *fData  = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_data/hist_Data_veto.root") ;
+	//TFile *fData  = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_data/hist_Data_loose.root") ;
+	//TFile *fData  = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_data/hist_Data_medium.root") ;
+	TFile *fData  = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_data/hist_Data_tight.root") ;
+	
+
+	//TFile *fDYjet = TFile::Open("hist/MC/hist_DYjet_nontri.root") ;
+	//TFile *fDYjet = TFile::Open("hist/MC/hist_DYjet_Z60_120.root") ;
+	
+	// --Egamma ID applied
+	//TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/hist_DYjet_veto.root") ;
+	//TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/hist_DYjet_loose.root") ;
+	//TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/hist_DYjet_medium.root") ;
+	TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/hist_DYjet_tight.root") ;
 
 	
 	TString histname = "h1_Mee"; XMAX=120; XMIN=60; rebin=10; YMAX=10000; TString title_name = "Mass_{ee}";
+	//TString histname = "h1_e2PT"; XMAX=30; XMIN=0; rebin=1; YMAX=10000; TString title_name = "Electron p_{T}";
 
 
 	TH1F *hData		= (TH1F*)fData	  ->Get(histname); 
@@ -30,17 +47,17 @@ void draw(){
 	hDYjet->SetLineWidth(3); hDYjet->SetLineColor(46);  
 	
 	//Find bin range
-	double x_start_bin = hDYjet->GetXaxis()->FindBin(60);
-	double x_end_bin = hDYjet->GetXaxis()->FindBin(120);
-	
-	cout << "start bin: " <<x_start_bin << endl;
-	cout << "end bin: "   <<x_end_bin << endl;
+	//double x_start_bin = hDYjet->GetXaxis()->FindBin(60);
+	//double x_end_bin = hDYjet->GetXaxis()->FindBin(120);
+	//cout << "start bin: " <<x_start_bin << endl;
+	//cout << "end bin: "   <<x_end_bin << endl;
 
 	//Normalize
-	hDYjet->Scale(hData->Integral(x_start_bin,x_end_bin) / hDYjet->Integral(x_start_bin,x_end_bin));
-	//hDYjet->Scale(hData->Integral() / hDYjet->Integral());
-	hDYjet->Rebin(rebin);
+	//hDYjet->Scale(hData->Integral(x_start_bin,x_end_bin) / hDYjet->Integral(x_start_bin,x_end_bin));
+	hDYjet->Scale(hData->Integral() / hDYjet->Integral());
 	
+	//Rebin
+	hDYjet->Rebin(rebin);
 	hData->Rebin(rebin);
 	
 	cout << "### After Normalize ###" << endl;
@@ -63,7 +80,7 @@ void draw(){
 		pad1->SetLogy();
 		pad1->Draw();
 		pad1->cd();
-		TH2F *null1 = new TH2F("null1","", 2, XMIN, XMAX, 2, 0.09,YMAX);
+		TH2F *null1 = new TH2F("null1","Electron ID tight", 2, XMIN, XMAX, 2, 0.09,YMAX);
 		null1->GetYaxis()->SetTitle(Form("Number of events / %3.1f GeV",binwidth));
 		null1->GetXaxis()->SetTitle(title_name);
 		null1->GetYaxis()->SetTitleOffset(1.2);
@@ -92,29 +109,5 @@ void draw(){
 		//latex.DrawLatex(0.6,0.91,Form("%.3f fb^{-1} (13 TeV)", Lumi/1000.0));
 		
 		TString pngname=histname + ".png";
-		c1->Print("MCvsData_Zmass_trigger"+pngname);
-
+		c1->Print(pngname);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
