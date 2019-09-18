@@ -12,8 +12,8 @@ void makeHist(){
 	TChain *inChain = new TChain("MiniAnalyzer/NpKNU");
 	
 	
+	bool isMC = false;
 	//bool isMC = true;
-	bool isMC = true;
 	//TFile *f1 = new TFile("hist_DYjet.root","recreate"); // for mc
 	TFile *f1 = new TFile("hist_Data.root","recreate"); //for data
 	
@@ -33,12 +33,10 @@ void makeHist(){
 	TH1D *h1_Mee = new TH1D("h1_Mee","h1_Mee",10000,0,1000);
 	TH1D *h1_e1PT = new TH1D("h1_e1PT","h1_e1PT",10000,0,1000);
 	TH1D *h1_e2PT = new TH1D("h1_e2PT","h1_e2PT",10000,0,1000);
-	TH1D *h1_ebMinDR = new TH1D("h1_ebMinDR","h1_ebMinDR",10000,0,20);
-	TH2D *eff_ele_ebElePt = new TH2D("eff_ele_ebElePt","eff_ele_ebElePt",10000,0,100,10000,0,100);
 
 	// Electron ID Eff
-	 TEfficiency* pEff = new TEfficiency("eff","ElectronID veto",20,0,10);
-	 pEff->SetTitle("ElectronID veto; p_{T} ; Eff");
+	 TEfficiency* pEff = new TEfficiency("eff","ElectronID tight",200,0,1000);
+	 pEff->SetTitle("ElectronID tight; p_{T} ; Eff");
 
 	int tot_evt = inChain->GetEntries();
 	int tri_cnt=0;
@@ -91,10 +89,10 @@ void makeHist(){
 			//if(elePtr->vidIsPassMedium == 0) continue;			
 			//if(elePtr->vidIsPassTight == 0) continue;			
 			
-			pEff->Fill(elePtr->vidIsPassVeto,elePtr->pt);
+			//pEff->Fill(elePtr->vidIsPassVeto,elePtr->pt);
 			//pEff->Fill(elePtr->vidIsPassLoose,elePtr->pt);
 			//pEff->Fill(elePtr->vidIsPassMedium,elePtr->pt);
-			//pEff->Fill(elePtr->vidIsPassTight,elePtr->pt);
+			pEff->Fill(elePtr->vidIsPassTight,elePtr->pt);
 
 
 			ele_ID_cnt++;
