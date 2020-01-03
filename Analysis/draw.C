@@ -5,7 +5,7 @@ void draw(){
 	long YMAX   = 100;
 	
 	double YratioMin = 0.1;
-	double YratioMax = 1.4;
+	double YratioMax = 2.1;
 
 	//const double Lumi = 0.062138580*1000     ;
 	//const double xsec_DYjet = 22880			 ;
@@ -16,31 +16,34 @@ void draw(){
 	int rebin=1; 
 	
 	// ---Data
-	TFile *fData  = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_data/Data_ele_pho_sel.root") ;
+	TFile *fData  = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_data/Data_ele_sel.root") ;
 
 	// ---MC
-	TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/DYjet_ele_pho_sel.root") ;
-	TFile *fLLAJJ = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/LLAJJ_ele_pho_sel.root") ;
+	//TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/DYjet_ele_sel.root") ;
+	//TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/DYjet_ele_sel_Z60_120.root") ;
+	TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/DYjet_ele_sel_Z70_110.root") ;
+
+	//TFile *fLLAJJ = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/LLAJJ_ele_sel.root") ;
 	
-	//TString histname = "h1_Mee"; XMAX=120; XMIN=60; rebin=10; YMAX=100; TString title_name = "Mass_{ee}";
-	//TString histname = "h1_e1PT"; XMAX=300; XMIN=0; rebin=10; YMAX=100; TString title_name = "Electron1 p_{T}"; YratioMin = 0.1; YratioMax = 15;
-	//TString histname = "h1_e2PT"; XMAX=150; XMIN=0; rebin=5; YMAX=50; TString title_name = "Electron2 p_{T}";  YratioMin = 0.1; YratioMax = 15;
-	TString histname = "h1_phoPT"; XMAX=500; XMIN=0; rebin=20; YMAX=500; TString title_name = "Photon p_{T}"; YratioMin = 0.1; YratioMax = 15;
+	TString histname = "h1_Mee"; XMAX=111; XMIN=69; rebin=10; YMAX=100; TString title_name = "Mass_{ee}";
+	//TString histname = "h1_e1PT"; XMAX=300; XMIN=0; rebin=10; YMAX=100; TString title_name = "Electron1 p_{T}"; YratioMin = 0.1; YratioMax = 5.1;
+	//TString histname = "h1_e2PT"; XMAX=150; XMIN=0; rebin=5; YMAX=50; TString title_name = "Electron2 p_{T}";  YratioMin = 0.1; YratioMax = 5.1;
+	//TString histname = "h1_phoPT"; XMAX=500; XMIN=0; rebin=20; YMAX=500; TString title_name = "Photon p_{T}"; YratioMin = 0.1; YratioMax = 5.1;
 
 
 	TH1F *hData		= (TH1F*)fData	  ->Get(histname); 
 	TH1F *hDYjet	= (TH1F*)fDYjet	  ->Get(histname); 
-	TH1F *hLLAJJ	= (TH1F*)fLLAJJ	  ->Get(histname); 
+	//TH1F *hLLAJJ	= (TH1F*)fLLAJJ	  ->Get(histname); 
 	
 	cout << "### Before Normalize ###" << endl;
 	cout << hData->Integral() << endl;
 	cout << hDYjet->Integral() << endl;
-	cout << hLLAJJ->Integral() << endl;
+	//cout << hLLAJJ->Integral() << endl;
 
 
 	//hDYjet->SetLineWidth(3); hDYjet->SetLineColor(46);  hDYjet->Scale(Lumi * xsec_DYjet / 25000);
-	hDYjet->SetLineWidth(3); hDYjet->SetLineColor(kBlue-4);  
-	hLLAJJ->SetLineWidth(3); hLLAJJ->SetLineColor(kRed-4);  
+	hDYjet->SetLineWidth(1); hDYjet->SetLineColor(kOrange-3); hDYjet->SetFillColor(kOrange-3);
+	//hLLAJJ->SetLineWidth(3); hLLAJJ->SetLineColor(kRed-4);  
 	
 	//Find bin range
 	//double x_start_bin = hDYjet->GetXaxis()->FindBin(60);
@@ -51,22 +54,22 @@ void draw(){
 	//Normalize
 	//hDYjet->Scale(hData->Integral(x_start_bin,x_end_bin) / hDYjet->Integral(x_start_bin,x_end_bin));
 	hDYjet->Scale(hData->Integral() / hDYjet->Integral());
-	hLLAJJ->Scale(hData->Integral() / hLLAJJ->Integral());
+	//hLLAJJ->Scale(hData->Integral() / hLLAJJ->Integral());
 	
 	//Rebin
 	hDYjet->Rebin(rebin);
-	hLLAJJ->Rebin(rebin);
+	//hLLAJJ->Rebin(rebin);
 	hData->Rebin(rebin);
 	
 	cout << "### After Normalize ###" << endl;
 	cout << hData->Integral() << endl;
 	cout << hDYjet->Integral() << endl;
-	cout << hLLAJJ->Integral() << endl;
+	//cout << hLLAJJ->Integral() << endl;
 
 	double binwidth = hDYjet->GetBinWidth(1);
 
 	TH1F * hRatio = new TH1F(*hData);
-	hRatio->Divide(hLLAJJ);
+	hRatio->Divide(hDYjet);
 
 
 	gStyle->SetOptStat(0);
@@ -87,7 +90,6 @@ void draw(){
     pad2->SetTopMargin(0);
     pad2->SetBottomMargin(0.35);
     pad2->SetGrid();
-	pad2->SetLogy();
     pad2->Draw();
 
 		pad1->cd();
@@ -100,7 +102,7 @@ void draw(){
 		null1->GetYaxis()->SetLabelSize(0.03);
 		null1->Draw();
 		 hDYjet->Draw("same hist");
-		 hLLAJJ->Draw("same hist");
+		 //hLLAJJ->Draw("same hist");
 		 hData ->Draw("E1 same");
 
 	
@@ -111,38 +113,41 @@ void draw(){
 		l0->SetBorderSize(0);
 		l0->SetTextSize(0.03);
 
-		TLegendEntry* l01 = l0->AddEntry(hDYjet,"DYjet"   ,"l"  );	l01->SetTextColor(hDYjet->GetLineColor());  
-		TLegendEntry* l02 = l0->AddEntry(hLLAJJ,"Siganl"   ,"l"  );	l02->SetTextColor(hLLAJJ->GetLineColor());  
+		TLegendEntry* l01 = l0->AddEntry(hDYjet,"DYjet"   ,"f"  );	l01->SetTextColor(hDYjet->GetLineColor());  
+		//TLegendEntry* l02 = l0->AddEntry(hLLAJJ,"Siganl"   ,"l"  );	l02->SetTextColor(hLLAJJ->GetLineColor());  
 		TLegendEntry* l03 = l0->AddEntry(hData, "Data"    ,"lep"  );			
 		l0->Draw();
 
 
-   pad2->cd();
-   TH2F *null2 = new TH2F("null2", "null2", 2, XMIN, XMAX, 2, YratioMin, YratioMax);
-   null2->SetTitle("");
-   null2->GetYaxis()->SetTitle("Data/MC");
-   null2->GetYaxis()->CenterTitle(true);
-   null2->GetYaxis()->SetTitleSize(0.1) ;
-   null2->GetYaxis()->SetTitleOffset(0.4);
-   null2->GetYaxis()->SetNdivisions(504);
-   null2->GetYaxis()->SetLabelSize(0.09) ;
-   null2->GetXaxis()->SetLabelSize(0.09) ;
-   null2->GetXaxis()->SetTitle(title_name) ;
-   null2->GetXaxis()->SetTitleSize(0.1) ;
-   null2->GetXaxis()->SetTitleOffset(1.1) ;
-   null2->Draw();
-   hRatio->SetMarkerStyle(21);
-   hRatio->Draw("ep same");
-
-
-	pad1->cd();
-		TLatex latex;
-		latex.SetNDC();
-		latex.SetTextSize(0.04);
-		latex.SetTextAlign(11);
-		//latex.DrawLatex(0.6,0.91,Form("%.3f fb^{-1} (13 TeV)", Lumi/1000.0));
-		
+	pad2->cd();
+	TH2F *null2 = new TH2F("null2", "null2", 2, XMIN, XMAX, 2, YratioMin, YratioMax);
+	TLine *line = new TLine(XMIN,1,XMAX,1);
 	
-   TString pngname=histname + ".png";
-   c1->Print(pngname);
+	null2->SetTitle("");
+	null2->GetYaxis()->SetTitle("Data/MC(BKG)");
+	null2->GetYaxis()->CenterTitle(true);
+	null2->GetYaxis()->SetTitleSize(0.1) ;
+	null2->GetYaxis()->SetTitleOffset(0.4);
+	null2->GetYaxis()->SetNdivisions(504);
+	null2->GetYaxis()->SetLabelSize(0.09) ;
+	null2->GetXaxis()->SetLabelSize(0.09) ;
+	null2->GetXaxis()->SetTitle(title_name) ;
+	null2->GetXaxis()->SetTitleSize(0.1) ;
+	null2->GetXaxis()->SetTitleOffset(1.1) ;
+	null2->Draw();
+	hRatio->SetMarkerStyle(21);
+	hRatio->Draw("ep same");
+	line->SetLineColor(kRed);
+	line->SetLineStyle(9);
+	line->Draw();
+	 pad1->cd();
+	 	TLatex latex;
+	 	latex.SetNDC();
+	 	latex.SetTextSize(0.04);
+	 	latex.SetTextAlign(11);
+	 	//latex.DrawLatex(0.6,0.91,Form("%.3f fb^{-1} (13 TeV)", Lumi/1000.0));
+	 	
+	 
+	TString pngname=histname + ".png";
+	c1->Print(pngname);
 }

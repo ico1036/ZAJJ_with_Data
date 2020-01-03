@@ -15,23 +15,25 @@ void makeHist(){
 
 	///  Manually set MC or Data  ///	
 	/////////////////////////////////////////////////////////////////////////
-	//bool isMC = true;
 	bool isMC = false;
-	//TFile *f1 = new TFile("DYjet_ele_pho_sel.root","recreate"); // for mc
-	TFile *f1 = new TFile("Data_ele_pho_sel.root","recreate"); //for data
+	bool isSig = false;
+	//TFile *f1 = new TFile("DYjet_ele_sel.root","recreate"); // for mc
+	TFile *f1 = new TFile("Data_ele_sel.root","recreate"); //for data
+	//TFile *f1 = new TFile("LLAJJ_ele_pho_sel.root","recreate"); // for mc(signal)
 	/////////////////////////////////////////////////////////////////////////
 
 
-
-
-
 	if(isMC){
-		inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/MC/DYjet.root"); // for mc
-		//inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/MC/EC_DYjet.root"); // for EC mc
+		
+		if(isSig){
+			inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/MC/LLAJJ_EWK.root"); // for sig
+		}else{
+			inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/MC//DYjet.root"); // for bkg
+		}
+
 	}else{
-		inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/DoubleEG_GT_Run2016B/Data.root"); //for data
-		//inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/DoubleEG_GT_Run2016B/EC_Data.root"); //for EC data
-	}
+			inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/DoubleEG_GT_Run2016B/Data.root"); //for data
+		}	
 	
 
 	TClonesArray *eleTCA	 = new TClonesArray("npknu::Electron");	inChain->SetBranchAddress("electron",&eleTCA);
@@ -46,9 +48,9 @@ void makeHist(){
 	TH1D *h1_Mee = new TH1D("h1_Mee","h1_Mee",10000,0,1000);
 	TH1D *h1_e1PT = new TH1D("h1_e1PT","h1_e1PT",10000,0,4000);
 	TH1D *h1_e2PT = new TH1D("h1_e2PT","h1_e2PT",10000,0,4000);
-	TH1D *h1_ebMinDR = new TH1D("h1_ebMinDR","h1_ebMinDR",10000,0,20);
-	//TH2D *eff_ele_ebElePt = new TH2D("eff_ele_ebElePt","eff_ele_ebElePt",10000,0,100,10000,0,100);
-	TH1D *h1_phoPT = new TH1D("h1_phoPT","h1_phoPT",10000,0,4000);
+	
+	//TH1D *h1_phoPT = new TH1D("h1_phoPT","h1_phoPT",10000,0,4000);
+
 	
 	// Electron ID Eff
 	//TEfficiency* pEff = new TEfficiency("eff","ElectronID Tight",1000,0,1000);
@@ -73,7 +75,8 @@ void makeHist(){
 	int cnt_Z_window=0;
 
 
-	cout <<"isMC?: " << isMC << endl;
+	cout <<"isMC?: "  << isMC << endl;
+	cout <<"isSig?: " << isSig << endl;
 	cout <<"Electron trigger nameIdx: " << ele_tri_idx << endl;
 	cout <<"Total Event: " <<tot_evt << endl;
 	
@@ -105,8 +108,7 @@ void makeHist(){
 	// -------END TRIGGER
 
 
-	// -------START Electron Selection
-		// ---Electron Loop start
+	// ---Electron Loop start
 		
 		for(int eleLoop=0; eleLoop<eleTCA->GetEntries(); eleLoop++){
             npknu::Electron *elePtr = (npknu::Electron*)eleTCA->At(eleLoop);
@@ -138,9 +140,8 @@ void makeHist(){
 			
 		} // -- End Electron Loop
 	
-	// -------START Photon Selection
-		// ---Photon Loop start
-		// -- Modifying ....................
+	// ---Photon Loop start
+		
 		for(int phoLoop=0; phoLoop<phoTCA->GetEntries(); phoLoop++){
             npknu::Photon *phoPtr = (npknu::Photon*)phoTCA->At(phoLoop);
 			pho_cnt++;
@@ -170,7 +171,9 @@ void makeHist(){
 		} // -- End Photon Loop
 
 
-		// ---Grep electron pair
+
+//  STEP.1  --- Start Electron pair selection
+		
 		if(eleSelTCA->GetEntries() < 2) continue;
 		npknu::Electron* elePtr1 = (npknu::Electron*)eleSelTCA->At(0); 
 		npknu::Electron* elePtr2 = (npknu::Electron*)eleSelTCA->At(1);
@@ -178,29 +181,31 @@ void makeHist(){
 		cnt_two_electrons++;
 	
 
+//  STEP.2  --- Start Photon selection
 
-		// ---Grep at least one photon
-		if(phoSelTCA->GetEntries() < 1) continue;
-		npknu::Photon* phoPtr1 = (npknu::Photon*)phoSelTCA->At(0); 
+		//if(phoSelTCA->GetEntries() < 1) continue;
+		//npknu::Photon* phoPtr1 = (npknu::Photon*)phoSelTCA->At(0); 
 		cnt_one_photon++;		
-		
 
 
-		//Reconstruct Z mass
+//  Kinematics --- Z boson window 
 		TLorentzVector eTVec1 = elePtr1->GetP4();
 		TLorentzVector eTVec2 = elePtr2->GetP4();
 		TLorentzVector eeTVec = eTVec1+eTVec2;
 		double Mee = eeTVec.M();
-		
-		// Z mass window
 		if(Mee < 70 || Mee > 110) continue;
+		//if(Mee < 60 || Mee > 120) continue;
 		cnt_Z_window++;
 		
-		// --Fill hist
+// --Fill hist
+		
+	// Electron (STEP 1)
 		h1_Mee->Fill(Mee);
 		h1_e1PT->Fill(elePtr1->pt);
 		h1_e2PT->Fill(elePtr2->pt);
-		h1_phoPT->Fill(phoPtr1->pt);
+	// Photon   (STEP 2)
+		//h1_phoPT->Fill(phoPtr1->pt);
+
 	} // --Event Loop Ended
 
 
@@ -211,11 +216,13 @@ void makeHist(){
 	cout << " Passing ID Electrons: " << ele_ID_cnt << endl;
 	cout << " Passing Ele additional: " << ele_Additional << endl;
 	cout << "	" << endl;
+	
 	cout << " Photons ==============================" << endl;
 	cout << " Total Photons: " << pho_cnt << endl;
 	cout << " Passing ID Photons: " << pho_ID_cnt << endl;
 	cout << " Passing pho additional: " << pho_Additional << endl;
 	cout << "	" << endl;
+
 	cout << " Kinematics  ==============================" << endl;
 
 	cout << "Passing Electron pair selection: " << cnt_two_electrons << endl;
@@ -225,5 +232,4 @@ void makeHist(){
 	// --Write file
 	f1->Write();
 
-
-}
+} // END PROGRAM 
