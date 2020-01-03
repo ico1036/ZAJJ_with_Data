@@ -15,10 +15,11 @@ void makeHist(){
 
 	///  Manually set MC or Data  ///	
 	/////////////////////////////////////////////////////////////////////////
-	bool isMC = false;
+	bool isMC = true;
 	bool isSig = false;
-	//TFile *f1 = new TFile("DYjet_ele_sel.root","recreate"); // for mc
-	TFile *f1 = new TFile("Data_ele_sel.root","recreate"); //for data
+	TFile *f1 = new TFile("QCDLLAJJ_ele_pho_sel.root","recreate"); // for mc
+	//TFile *f1 = new TFile("Data_ele_pho_sel.root","recreate"); //for data
+	
 	//TFile *f1 = new TFile("LLAJJ_ele_pho_sel.root","recreate"); // for mc(signal)
 	/////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +29,8 @@ void makeHist(){
 		if(isSig){
 			inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/MC/LLAJJ_EWK.root"); // for sig
 		}else{
-			inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/MC//DYjet.root"); // for bkg
+			//inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/MC/DYjet.root"); // for bkg
+			inChain->Add("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Ntuple/MC/LLAJJ_QCD.root"); // for bkg
 		}
 
 	}else{
@@ -48,8 +50,7 @@ void makeHist(){
 	TH1D *h1_Mee = new TH1D("h1_Mee","h1_Mee",10000,0,1000);
 	TH1D *h1_e1PT = new TH1D("h1_e1PT","h1_e1PT",10000,0,4000);
 	TH1D *h1_e2PT = new TH1D("h1_e2PT","h1_e2PT",10000,0,4000);
-	
-	//TH1D *h1_phoPT = new TH1D("h1_phoPT","h1_phoPT",10000,0,4000);
+	TH1D *h1_phoPT = new TH1D("h1_phoPT","h1_phoPT",10000,0,4000);
 
 	
 	// Electron ID Eff
@@ -183,8 +184,8 @@ void makeHist(){
 
 //  STEP.2  --- Start Photon selection
 
-		//if(phoSelTCA->GetEntries() < 1) continue;
-		//npknu::Photon* phoPtr1 = (npknu::Photon*)phoSelTCA->At(0); 
+		if(phoSelTCA->GetEntries() < 1) continue;
+		npknu::Photon* phoPtr1 = (npknu::Photon*)phoSelTCA->At(0); 
 		cnt_one_photon++;		
 
 
@@ -204,7 +205,7 @@ void makeHist(){
 		h1_e1PT->Fill(elePtr1->pt);
 		h1_e2PT->Fill(elePtr2->pt);
 	// Photon   (STEP 2)
-		//h1_phoPT->Fill(phoPtr1->pt);
+		h1_phoPT->Fill(phoPtr1->pt);
 
 	} // --Event Loop Ended
 

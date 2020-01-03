@@ -12,37 +12,40 @@ void draw(){
 		 
 
 
-
 	int rebin=1; 
 	
 	// ---Data
-	TFile *fData  = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_data/Data_ele_sel.root") ;
+	TFile *fData  = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_data/Data_ele_pho_sel.root") ;
 
 	// ---MC
 	//TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/DYjet_ele_sel.root") ;
 	//TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/DYjet_ele_sel_Z60_120.root") ;
-	TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/DYjet_ele_sel_Z70_110.root") ;
+	//TFile *fDYjet = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/DYjet_ele_sel_Z70_110.root") ;
+	
+	TFile *fQCD = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/QCDLLAJJ_ele_pho_sel.root") ;
 
 	//TFile *fLLAJJ = TFile::Open("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/result_mc/LLAJJ_ele_sel.root") ;
 	
-	TString histname = "h1_Mee"; XMAX=111; XMIN=69; rebin=10; YMAX=100; TString title_name = "Mass_{ee}";
+	//TString histname = "h1_Mee"; XMAX=111; XMIN=69; rebin=20; YMAX=100; TString title_name = "Mass_{ee}";
 	//TString histname = "h1_e1PT"; XMAX=300; XMIN=0; rebin=10; YMAX=100; TString title_name = "Electron1 p_{T}"; YratioMin = 0.1; YratioMax = 5.1;
 	//TString histname = "h1_e2PT"; XMAX=150; XMIN=0; rebin=5; YMAX=50; TString title_name = "Electron2 p_{T}";  YratioMin = 0.1; YratioMax = 5.1;
-	//TString histname = "h1_phoPT"; XMAX=500; XMIN=0; rebin=20; YMAX=500; TString title_name = "Photon p_{T}"; YratioMin = 0.1; YratioMax = 5.1;
+	TString histname = "h1_phoPT"; XMAX=250; XMIN=0; rebin=20; YMAX=250; TString title_name = "Photon p_{T}"; YratioMin = 0.1; YratioMax = 3.1;
 
 
 	TH1F *hData		= (TH1F*)fData	  ->Get(histname); 
-	TH1F *hDYjet	= (TH1F*)fDYjet	  ->Get(histname); 
+	TH1F *hQCD		= (TH1F*)fQCD	  ->Get(histname); 
+	//TH1F *hDYjet	= (TH1F*)fDYjet	  ->Get(histname); 
 	//TH1F *hLLAJJ	= (TH1F*)fLLAJJ	  ->Get(histname); 
 	
 	cout << "### Before Normalize ###" << endl;
 	cout << hData->Integral() << endl;
-	cout << hDYjet->Integral() << endl;
+	cout << hQCD->Integral() << endl;
+	//cout << hDYjet->Integral() << endl;
 	//cout << hLLAJJ->Integral() << endl;
 
 
-	//hDYjet->SetLineWidth(3); hDYjet->SetLineColor(46);  hDYjet->Scale(Lumi * xsec_DYjet / 25000);
-	hDYjet->SetLineWidth(1); hDYjet->SetLineColor(kOrange-3); hDYjet->SetFillColor(kOrange-3);
+	hQCD->SetLineWidth(1); hQCD->SetLineColor(kOrange-3); hQCD->SetFillColor(kOrange-3);
+	//hDYjet->SetLineWidth(1); hDYjet->SetLineColor(kOrange-3); hDYjet->SetFillColor(kOrange-3);
 	//hLLAJJ->SetLineWidth(3); hLLAJJ->SetLineColor(kRed-4);  
 	
 	//Find bin range
@@ -53,23 +56,25 @@ void draw(){
 
 	//Normalize
 	//hDYjet->Scale(hData->Integral(x_start_bin,x_end_bin) / hDYjet->Integral(x_start_bin,x_end_bin));
-	hDYjet->Scale(hData->Integral() / hDYjet->Integral());
+	hQCD->Scale(hData->Integral() / hQCD->Integral());
 	//hLLAJJ->Scale(hData->Integral() / hLLAJJ->Integral());
 	
 	//Rebin
-	hDYjet->Rebin(rebin);
-	//hLLAJJ->Rebin(rebin);
 	hData->Rebin(rebin);
+	hQCD->Rebin(rebin);
+	//hDYjet->Rebin(rebin);
+	//hLLAJJ->Rebin(rebin);
 	
 	cout << "### After Normalize ###" << endl;
 	cout << hData->Integral() << endl;
-	cout << hDYjet->Integral() << endl;
+	cout << hQCD->Integral() << endl;
+	//cout << hDYjet->Integral() << endl;
 	//cout << hLLAJJ->Integral() << endl;
 
-	double binwidth = hDYjet->GetBinWidth(1);
+	double binwidth = hQCD->GetBinWidth(1);
 
 	TH1F * hRatio = new TH1F(*hData);
-	hRatio->Divide(hDYjet);
+	hRatio->Divide(hQCD);
 
 
 	gStyle->SetOptStat(0);
@@ -101,8 +106,7 @@ void draw(){
 		null1->GetYaxis()->SetTitleSize(0.03);
 		null1->GetYaxis()->SetLabelSize(0.03);
 		null1->Draw();
-		 hDYjet->Draw("same hist");
-		 //hLLAJJ->Draw("same hist");
+		 hQCD->Draw("same hist");
 		 hData ->Draw("E1 same");
 
 	
@@ -113,8 +117,7 @@ void draw(){
 		l0->SetBorderSize(0);
 		l0->SetTextSize(0.03);
 
-		TLegendEntry* l01 = l0->AddEntry(hDYjet,"DYjet"   ,"f"  );	l01->SetTextColor(hDYjet->GetLineColor());  
-		//TLegendEntry* l02 = l0->AddEntry(hLLAJJ,"Siganl"   ,"l"  );	l02->SetTextColor(hLLAJJ->GetLineColor());  
+		TLegendEntry* l01 = l0->AddEntry(hQCD,"QCD LLAJJ"   ,"f"  );	l01->SetTextColor(hQCD->GetLineColor());  
 		TLegendEntry* l03 = l0->AddEntry(hData, "Data"    ,"lep"  );			
 		l0->Draw();
 
