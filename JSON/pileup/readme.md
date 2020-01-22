@@ -7,8 +7,8 @@
 pileup_latest.txt files is the most up-to-date file  
 
 3. Convert Json file to Root file (histogram)  
-```python
-pileupCalc.py -i PATH_of_Golden_Json_file --inputLumiJSON PATH_of_Input_Lumi_Json_file --calcMode true --minBiasXsec 71300 --maxPileupBin 100 --numPileupBins 100 Output_file_name.root
+```bash
+$ pileupCalc.py -i PATH_of_Golden_Json_file --inputLumiJSON PATH_of_Input_Lumi_Json_file --calcMode true --minBiasXsec 71300 --maxPileupBin 100 --numPileupBins 100 Output_file_name.root
 ```
 
 The output file from this code is the standard for MC pile-up re-weighting  
