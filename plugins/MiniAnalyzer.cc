@@ -5,6 +5,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
@@ -15,6 +16,9 @@
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/PatCandidates/interface/VIDCutFlowResult.h"
@@ -27,8 +31,12 @@
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
-
 #include "MiniAnalyzer/MiniAnalyzer/src/NpKNU.hh"
+
+#include "JetMETCorrections/Objects/interface/JetCorrector.h"
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "vector"
 
 
@@ -37,71 +45,129 @@ class MiniAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       explicit MiniAnalyzer(const edm::ParameterSet&);
       ~MiniAnalyzer();
 
+	
+
    private:
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
-// ---------Electron: 1. EDGet Token 
+// ---------1. EDGet Token 
 
-	edm::EDGetTokenT<edm::View<pat::Electron> > electronToken_;
+
+	// Trigger
 	edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken;
 	edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken;
 	std::vector<std::string> triggerIdentifiers;
 	std::vector<std::string> triggerLabelsName ;
+	
+	// Vertex
+	edm::EDGetTokenT<reco::VertexCollection> vertexToken ;
+	int ntNumVertex ;
+    int ntNumGoodVertex ;
+
+	// Pileup
+	edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupToken;
+	
+	// Particles
+	edm::EDGetTokenT<edm::View<pat::Electron> > electronToken_ ;
+	edm::EDGetTokenT<edm::View<pat::Photon> > photonToken_ ;
+	edm::EDGetTokenT<edm::View<pat::Jet> > jetToken_;
+
+
+	// Useful definitions....
 	int TriggerNameToInt(std::string name);
 	bool DoPrintTrigger;
      
-	TTree* outTree				;
-	TClonesArray* evtTCA		;
-	TClonesArray* electronTCA	;	  
+	TTree* outTree						;
+	TClonesArray* evtTCA				;
 	TClonesArray* triggerTCA            ;
 	TClonesArray* triggerObjectTCA      ;
-};
+	TClonesArray* electronTCA			;	  
+	TClonesArray* photonTCA				;	  
+	TClonesArray* jetTCA				;	  
+	TClonesArray* vertexTCA				;	  
+	TClonesArray* pileupTCA				;	  
+
+
+	int start_num;
+	int vertex_num;
+	int fill_num;
+
+
+};   // -- Class End
 
 
 MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig){
     edm::Service<TFileService> fs;
     outTree = fs->make<TTree> ("NpKNU","NpKNU");
     
-	evtTCA = new TClonesArray("npknu::Evt"); outTree->Branch("evt"      , &evtTCA );
-	electronTCA = new TClonesArray("npknu::Electron"); outTree->Branch("electron"      , &electronTCA );
+	evtTCA		= new TClonesArray("npknu::Evt");					outTree->Branch("evt"      , &evtTCA )      ;
+	triggerTCA = new TClonesArray("npknu::Trigger");				outTree->Branch("trigger"      , &triggerTCA );
+    triggerObjectTCA = new TClonesArray("npknu::TriggerObject");	outTree->Branch("triggerObject"      , &triggerObjectTCA );
+    vertexTCA = new TClonesArray("npknu::Vertex");					outTree->Branch("vertex", &vertexTCA );
+    pileupTCA = new TClonesArray("npknu::Pileup");					outTree->Branch("pileup", &pileupTCA );
+	electronTCA = new TClonesArray("npknu::Electron");				outTree->Branch("electron" , &electronTCA ) ;
+	photonTCA	= new TClonesArray("npknu::Photon");				outTree->Branch("photon"   , &photonTCA )   ;
+	jetTCA		= new TClonesArray("npknu::Jet");					outTree->Branch("jet"   , &jetTCA )		;
 	
 
-// ---------Elecgron: 2. Linking Input tag 
-	electronToken_		 = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons"));
+// ---------2. Linking Input tag 
+	
 
 
-	triggerTCA = new TClonesArray("npknu::Trigger"); outTree->Branch("trigger"      , &triggerTCA );
-    triggerObjectTCA = new TClonesArray("npknu::TriggerObject"); outTree->Branch("triggerObject"      , &triggerObjectTCA );
+
+	// Trigger
 	triggerResultsToken = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResults"));
 	triggerObjectsToken = consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"));
 	triggerPrescalesToken = consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"));
     triggerIdentifiers = iConfig.getParameter<std::vector<std::string> >("triggerIdentifiers");
     triggerLabelsName = iConfig.getParameter<std::vector<std::string> >("triggerLabelsName");
     int ThisGlobalTriggerIndex = 0;
-   for(std::vector<std::string>::iterator it = triggerLabelsName.begin(); it!= triggerLabelsName.end(); it++) {
-      ThisGlobalTriggerIndex++;
-      size_t lastSize = it->find("_v");
-      if(lastSize != std::string::npos) it->resize(lastSize+2);
-      std::cout << "### IndexTriggerLabelName " << ThisGlobalTriggerIndex << " " << *it << std::endl;
-  }
+		for(std::vector<std::string>::iterator it = triggerLabelsName.begin(); it!= triggerLabelsName.end(); it++) {
+			ThisGlobalTriggerIndex++;
+			size_t lastSize = it->find("_v");
+			if(lastSize != std::string::npos) it->resize(lastSize+2);
+   //   std::cout << "### IndexTriggerLabelName " << ThisGlobalTriggerIndex << " " << *it << std::endl;
+		}
     DoPrintTrigger = true;
-}
+	
+
+	// Vertex
+	vertexToken          = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertex")) ;
+	outTree->Branch("ntNumVertex",&ntNumVertex);
+    outTree->Branch("ntNumGoodVertex",&ntNumGoodVertex);
+
+	// Pileup
+	pileupToken = (consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("pileup")))   ;
+
+	// Particles
+	electronToken_		 = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons"));
+	photonToken_		 = consumes<edm::View<pat::Photon> >(iConfig.getParameter<edm::InputTag>("photons"));
+	jetToken_			 = consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"));
+
+	start_num  =0 ;
+	fill_num   =0 ;
+	vertex_num =0 ;
+
+}  // -- Constructer end
+
 
 MiniAnalyzer::~MiniAnalyzer(){}
 
+
+// ---------------Event Loop 
 void MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  using namespace edm;
+   using namespace edm;
    using namespace std;
    using namespace reco;
 
    using std::cout;
    using std::endl;
 
-
+	start_num++;
 // START Event
 	evtTCA->Clear("C");
 	npknu::Evt* evtObjPtr = new ((*evtTCA)[(int)evtTCA->GetEntries()])npknu::Evt() ;
@@ -125,7 +191,7 @@ void MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		std::cout << "\n === TRIGGER PATHS === " << std::endl;
 		for (unsigned int i = 0, n = triggerResults->size(); i < n; ++i) {
 			int thisTriIdx = TriggerNameToInt(names.triggerName(i));
-			std::cout << evtObjPtr << " TriggerNameAll " << names.triggerName(i) << " " << thisTriIdx << std::endl;
+		//	std::cout << evtObjPtr << " TriggerNameAll " << names.triggerName(i) << " " << thisTriIdx << std::endl;
         }
         DoPrintTrigger = false;
    }
@@ -181,6 +247,72 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
 // END Trigger
 
 
+// START VERTEX
+   edm::Handle<reco::VertexCollection> vertices;
+   iEvent.getByToken(vertexToken, vertices);
+   if (vertices->empty()) return; //skip the event if no PV found
+   reco::VertexCollection::const_iterator firstGoodVertex = vertices->end();
+   int firstGoodVertexIdx = 0;
+   for(reco::VertexCollection::const_iterator vtx = vertices->begin(); vtx != vertices->end(); ++vtx, ++firstGoodVertexIdx) {
+       // Replace isFake() for miniAOD because
+       // it requires tracks and miniAOD vertices don't have tracks:
+       // Vertex.h: bool isFake() const {return (chi2_==0 && ndof_==0 && tracks_.empty());}
+       // bool isFake = vtx->isFake();
+       bool isFake =  (vtx->chi2()==0 && vtx->ndof()==0);
+       if ( !isFake &&  vtx->ndof()>=4. && vtx->position().Rho()<=2.0 && fabs(vtx->position().Z())<=24.0) {
+              firstGoodVertex = vtx;
+           break;
+           }
+    }
+   if ( firstGoodVertex==vertices->end() ) return; // skip event if there are no good PVs
+   //std::cout << "good PVs , firstGoodVertexIdx " << firstGoodVertexIdx << std::endl;
+
+    vertexTCA->Clear("C");
+    ntNumVertex = 0;
+    ntNumGoodVertex = 0;
+   for(const reco::Vertex& it : *vertices) {
+        ntNumVertex++;
+        if( (!it.isFake()) and (it.ndof() >= 4.0) and (it.position().rho() <= 2.0) and (std::fabs(it.z()) <= 24.0) ) ntNumGoodVertex++;
+        if(ntNumVertex == 1 || ntNumGoodVertex == 1) {
+        npknu::Vertex* vertexPtr = new ((*vertexTCA)[(int)vertexTCA->GetEntries()]) npknu::Vertex();
+        vertexPtr->x              = it.x()              ;
+        vertexPtr->y              = it.y()              ;
+        vertexPtr->z              = it.z()              ;
+        vertexPtr->xError         = it.xError()         ;
+        vertexPtr->yError         = it.yError()         ;
+        vertexPtr->zError         = it.zError()         ;
+        vertexPtr->tracksSize     = it.tracksSize()     ;
+        vertexPtr->nTracks        = it.nTracks()        ;
+        vertexPtr->isFake         = it.isFake()         ;
+        vertexPtr->ndof           = it.ndof()           ;
+        vertexPtr->position_rho   = it.position().rho() ;
+        vertexPtr->chi2           = it.chi2()           ;
+        vertexPtr->normalizedChi2 = it.normalizedChi2() ;
+        }
+   }
+
+	vertex_num++;
+// END VERTEX
+
+
+
+// START Pileup
+    pileupTCA->Clear("C");
+    if(!iEvent.isRealData()) {
+		edm::Handle<std::vector<PileupSummaryInfo> > PileupInfos; iEvent.getByToken(pileupToken, PileupInfos);
+		for (const PileupSummaryInfo& it : *PileupInfos) {
+			// In-time bunch crossing
+			if(it.getBunchCrossing() == 0) {
+				npknu::Pileup* pileupPtr = new ((*pileupTCA)[(int)pileupTCA->GetEntries()]) npknu::Pileup();
+				pileupPtr->BunchCrossing       = it.getBunchCrossing();
+				pileupPtr->TrueNumInteractions = it.getTrueNumInteractions();
+				pileupPtr->PU_NumInteractions  = it.getPU_NumInteractions();
+			}
+		}
+    }
+// END Pileup
+
+
 
 
 // START Electron
@@ -188,8 +320,7 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
     
 
 
-
-// ---------Elecgron: 3. Handle 
+// --------- 3. Handle 
 	edm::Handle<edm::View<pat::Electron> > electrons; iEvent.getByToken(electronToken_, electrons);
 
 
@@ -199,10 +330,9 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
 		
 		const edm::Ptr<pat::Electron> elePtr(electrons, ele - electrons->begin());
 		npknu::Electron* electronPtr = new ((*electronTCA)[(int)electronTCA->GetEntries()]) npknu::Electron();
-        electronPtr->SetPtEtaPhiE(elePtr->pt(), elePtr->eta(), elePtr->phi(), elePtr->energy());
-    
-
-
+        
+		// 4 vector
+		electronPtr->SetPtEtaPhiE(elePtr->pt(), elePtr->eta(), elePtr->phi(), elePtr->energy());
 
 		// ---Electron ID
 		electronPtr->vidIsPassVeto	 = ele->electronID("cutBasedElectronID-Summer16-80X-V1-veto")  ;
@@ -268,8 +398,89 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
 	} // EleLoop ended
 //END Electron
 	
+
+
+// START Photon
+	photonTCA->Clear("C");
+    
+
+
+// --------- 3. Handle 
+	edm::Handle<edm::View<pat::Photon> > photons; iEvent.getByToken(photonToken_, photons);
+	
+	// --Photon Loop
+	for(edm::View<pat::Photon>::const_iterator pho = photons->begin(); pho != photons->end(); ++pho) {
+      
+
+	  const edm::Ptr<pat::Photon> phoPtr(photons, pho - photons->begin());
+      npknu::Photon* photonPtr =  new ((*photonTCA)[(int)photonTCA->GetEntries()]) npknu::Photon();
+		
+		// 4-vector
+		photonPtr->SetPtEtaPhiE(pho->pt(), pho->eta(), pho->phi(), pho->energy());
+
+		// Photon ID
+		photonPtr->vidIsPassLoose    = pho->photonID("cutBasedPhotonID-Spring16-V2p2-loose") ;
+		photonPtr->vidIsPassMedium   = pho->photonID("cutBasedPhotonID-Spring16-V2p2-medium");
+		photonPtr->vidIsPassTight	 = pho->photonID("cutBasedPhotonID-Spring16-V2p2-tight") ;
+
+		photonPtr->superCluster_eta             = pho->superCluster()->eta()  ;
+		photonPtr->superCluster_phi             = pho->superCluster()->phi()  ;
+
+		//std::cout << "Photon PT :" << pho->pt() << std::endl;
+		//std::cout << "Photon KNU PT :" << photonPtr->pt << std::endl;
+
+	} // --Photon Loop END
+
+// START JET
+	jetTCA->Clear("C");
+
+
+	// --------3. Handle
+	edm::Handle<edm::View<pat::Jet> > jets; iEvent.getByToken(jetToken_, jets);
+	
+	// --Jet Loop
+	for(edm::View<pat::Jet>::const_iterator jet = jets->begin(); jet != jets->end(); ++jet) {
+		
+		const edm::Ptr<pat::Jet> jtPtr(jets, jet - jets->begin());
+		npknu::Jet* jetPtr =  new ((*jetTCA)[(int)jetTCA->GetEntries()]) npknu::Jet();
+
+		jetPtr->SetPtEtaPhiE(jet->pt(), jet->eta(), jet->phi(), jet->energy());
+		jetPtr->neutralHadronEnergyFraction   = jet->neutralHadronEnergyFraction() ;
+		jetPtr->neutralEmEnergyFraction       = jet->neutralEmEnergyFraction()     ;
+		jetPtr->chargedMultiplicity           = jet->chargedMultiplicity()         ;
+		jetPtr->neutralMultiplicity           = jet->neutralMultiplicity()         ;
+		jetPtr->muonEnergyFraction            = jet->muonEnergyFraction()          ;
+		jetPtr->chargedHadronEnergyFraction   = jet->chargedHadronEnergyFraction() ;
+		jetPtr->chargedEmEnergyFraction       = jet->chargedEmEnergyFraction()     ;
+
+	}
+
 	outTree->Fill();
+
+	fill_num++;
+	
+	if(start_num != fill_num){ cout << " ######## Event Number Error " << " " << "run #: " << evtObjPtr->run << " " << "event #: " << evtObjPtr->event << " " << "Start num: "<< start_num << " " << "Vertex num: "<< vertex_num << " " << "Fill num" << fill_num  << endl;
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 int MiniAnalyzer::TriggerNameToInt(std::string name) {
