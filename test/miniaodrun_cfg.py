@@ -8,7 +8,7 @@ process = cms.Process("MiniAnalyzer")
 options = dict()
 varOptions = VarParsing('analysis')
 varOptions.register("isMC", False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "isMC" )
-varOptions.register("isSig", True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "isSig" )
+varOptions.register("isSig", False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "isSig" )
 
 
 varOptions.parseArguments()
@@ -60,7 +60,7 @@ if (varOptions.isMC):
 #		,'file:/xrootd/store/mc/RunIISummer16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/80000/14E0B6FB-61EB-E611-B929-001E6739B871.root'
 #		,'file:/xrootd/store/mc/RunIISummer16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/80000/16B7270A-5AEB-E611-BEDB-001E67F8FA15.root'
 		]
-		outFileName="DYjets_wrong_2.root"
+		outFileName="DYjets_check.root"
 
 
 else:

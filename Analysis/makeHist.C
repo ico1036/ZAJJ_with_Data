@@ -8,6 +8,8 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TSystem.h"
+#include "/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/scale_factors/EGammaSFMoriond2017.hh"
+
 
 
 using namespace std;
@@ -23,7 +25,7 @@ int main(int argc, char** argv){
 	// IO
 	gSystem->Load("/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_6_patch1/src/MiniAnalyzer/MiniAnalyzer/src/libNpKNU.so");	
 	TChain *inChain = new TChain("MiniAnalyzer/NpKNU");
-
+	
 	bool isMC;
 	bool isSig = false;
 	double lumi=215.149415251; 
@@ -32,7 +34,7 @@ int main(int argc, char** argv){
 	TString outfilename;
 
 
-
+	
 	std::string action(argv[1]);
 	if (action == "QCDLLAJ"){
 		isMC = true;
@@ -41,7 +43,7 @@ int main(int argc, char** argv){
 
 	}else if ( action == "DYjets"){
 		isMC = true;
-		outfilename = "DYjets_LumiWeight.root";
+		outfilename = "DYjets_SFWeight.root";
 		gen_evt = 1310938;
 		xsec = 6225.42;
 
@@ -86,8 +88,6 @@ int main(int argc, char** argv){
 	
 
 	// Histograms
-
-	
 	TH1D *h1_NumVertex			= new TH1D("h1_NumVertex","h1_NumVertex",200,0,200);
 	TH1D *h1_Normed_NumVertex   = new TH1D("h1_Normed_NumVertex","h1_Normed_NumVertex",200,0,200); 		
     TH1D *h1_PUWeight_NumVertex	= new TH1D("h1_PUWeight_NumVertex","h1_PUWeight_NumVertex",200,0,200);
@@ -123,6 +123,8 @@ int main(int argc, char** argv){
 	
 	TString MCFile = "/hcp/data/data02/jwkim2/WORK/CMSSW_9_4_9_cand2/src/MiniAnalyzer/Analysis/MCPUhist.root";
 	npknu::PUReweight *puWeight = new npknu::PUReweight("../JSON/pileup/MyDataPUHist.root", MCFile, "pileup");
+	
+
 
 
 	// Counters
@@ -151,7 +153,6 @@ int main(int argc, char** argv){
 	int cnt_Z_window=0;
 
 
-
 	cout <<"isMC?: "  << isMC << endl;
 	cout <<"isSig?: " << isSig << endl;
 	cout <<"Electron trigger nameIdx: " << ele_tri_idx << endl;
@@ -162,6 +163,7 @@ int main(int argc, char** argv){
 	cout <<"Goodrun Event: " <<tot_evt << endl;
 	cout <<"Goodrun Event normalised: " <<tot_evt * xsec * lumi / gen_evt  << endl;
 	
+	EGammaSFInit();
 
 	
 // --EventLoop
@@ -189,7 +191,6 @@ int main(int argc, char** argv){
 
 
 
-
 	//  STEP.1  --- Start Electron pair selection
 		// ---Electron Loop start
 		for(int eleLoop=0; eleLoop<eleTCA->GetEntries(); eleLoop++){
@@ -207,7 +208,7 @@ int main(int argc, char** argv){
 			ele_ID_cnt++;
 			// --Offline selection
 			if(elePtr->Et() <= 20) continue;
-			if(elePtr->Pt() < 20) continue;
+			if(elePtr->pt < 20) continue;
 			if(fabs(elePtr->eta) >= 2.5) continue;
 			if(fabs(elePtr->superCluster_eta) >= 2.5) continue;
 			if(fabs(elePtr->superCluster_eta) > 1.4442 &&  fabs(elePtr->superCluster_eta) < 1.566 ) continue;
@@ -223,20 +224,21 @@ int main(int argc, char** argv){
 		npknu::Electron* elePtr2 = (npknu::Electron*)eleSelTCA->At(1);
 		if(elePtr1->charge * elePtr2->charge > 0) continue;
 		cnt_two_electrons++;
-	
-
 
 	// -------START PU RE_WEIGHTING  
-		
 		npknu::Pileup* pileupPtr = (npknu::Pileup*)pileupTCA->At(0);
 		double pileup = pileupPtr->TrueNumInteractions;
 		double pileupWeight =  (isMC) ?  puWeight->getWeight(pileup) : 1 ;
 		double LumiWeight   =  (isMC) ?  lumi * xsec / gen_evt : 1 ;
 		double tWeight =  (isMC) ? LumiWeight * pileupWeight : 1 ;
-	
 
-		//  cout << pileupWeight << endl
-
+	// -- Electron ID,RECO scale factor
+		double SFEleReco1 = (isMC) ? GetSFEleReco(elePtr1->superCluster_eta, elePtr1->pt) : 1  ;
+		double SFEleReco2 = (isMC) ? GetSFEleReco(elePtr2->superCluster_eta, elePtr2->pt) : 1  ;
+		double SFEleId1   = (isMC) ? GetSFEleID(elePtr1->superCluster_eta, elePtr1->pt)   : 1  ;
+		double SFEleId2   = (isMC) ? GetSFEleID(elePtr2->superCluster_eta, elePtr2->pt)   : 1 ;
+		double SF = tWeight * SFEleReco1 * SFEleReco2 * SFEleId1 * SFEleId2       ;
+		
 		h1_NumVertex->Fill(NumVertex);
 		h1_Normed_NumVertex		->Fill(NumVertex,LumiWeight);
 		h1_PUWeight_NumVertex	->Fill(NumVertex,pileupWeight);
@@ -250,11 +252,12 @@ int main(int argc, char** argv){
 		TLorentzVector eeTVec = eTVec1+eTVec2;
 		double Mee = eeTVec.M();
 		
+
 		//--Fill hist 
 			// Electron 
 			//h1_Mee_step1->Fill(Mee,1);
 			//h1_Mee_step1->Fill(Mee,tWeight);
-			h1_Mee_step1->Fill(Mee,LumiWeight);
+		h1_Mee_step1->Fill(Mee,SF);
 			//h1_e1PT_step1->Fill(elePtr1->pt);
 			//h1_e2PT_step1->Fill(elePtr2->pt);
 

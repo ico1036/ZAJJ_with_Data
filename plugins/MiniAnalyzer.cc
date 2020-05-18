@@ -250,7 +250,7 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
 // START VERTEX
    edm::Handle<reco::VertexCollection> vertices;
    iEvent.getByToken(vertexToken, vertices);
-   if (vertices->empty()) return; //skip the event if no PV found
+   //if (vertices->empty()) return; //skip the event if no PV found
    reco::VertexCollection::const_iterator firstGoodVertex = vertices->end();
    int firstGoodVertexIdx = 0;
    for(reco::VertexCollection::const_iterator vtx = vertices->begin(); vtx != vertices->end(); ++vtx, ++firstGoodVertexIdx) {
@@ -264,7 +264,7 @@ if(numAllCheckToLast != pathNamesLast.size()) cout << "### Error TriggerPathChec
            break;
            }
     }
-   if ( firstGoodVertex==vertices->end() ) return; // skip event if there are no good PVs
+   //if ( firstGoodVertex==vertices->end() ) return; // skip event if there are no good PVs
    //std::cout << "good PVs , firstGoodVertexIdx " << firstGoodVertexIdx << std::endl;
 
     vertexTCA->Clear("C");
